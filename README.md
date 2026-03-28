@@ -15,7 +15,7 @@
 | **Database ORM** | Prisma (PostgreSQL) |
 | **Cloud Services** | AWS EC2 / S3 |
 | **Authentication** | JWT-based Auth (Role-based) |
-| **State Management** | Zustand / Redux Toolkit |
+| **State Management** | Redux Toolkit |
 | **Styling** | Tailwind CSS + ShadCN UI |
 | **Deployment** | Vercel (Frontend), AWS EC2 (Backend) |
 
@@ -30,7 +30,7 @@ StayZio/
 │   │   ├── app/            # App Router (Auth, Dashboard, Listings, etc.)
 │   │   ├── components/     # Reusable UI components
 │   │   ├── hooks/          # Custom React hooks
-│   │   ├── state/          # Zustand or Redux store
+│   │   ├── state/          # Redux 
 │   │   ├── lib/            # Utility functions & API client
 │   │   └── types/          # Global TypeScript types
 │   └── package.json
