@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stayzio-server
+  labels:
+    app: stayzio-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stayzio-server
+  template:
+    metadata:
+      labels:
+        app: stayzio-server
+    spec:
+      containers:
+        - name: server
+          image: your-registry/stayzio-server:latest # Replace with your container registry path
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "3002"
+            - name: DATABASE_URL
+              value: "postgresql://postgres:password@stayzio-postgres-service:5432/real_estate_db?schema=public"
+            - name: REDIS_URL
+              value: "redis://stayzio-redis-service:6379"
+            - name: JWT_SECRET
+              value: "stayzio-jwt-token-secret-production-key-120"
+            - name: CORS_ORIGIN
+              value: "http://stayzio.local" # Adjust based on host domain mapping
+          ports:
+            - containerPort: 3002
+              name: server
+          resources:
+            requests:
+              cpu: 150m
+              memory: 256Mi
+            limits:
+              cpu: 400m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stayzio-server-service
+spec:
+  selector:
+    app: stayzio-server
+  ports:
+    - protocol: TCP
+      port: 3002
+      targetPort: 3002
+  type: ClusterIP

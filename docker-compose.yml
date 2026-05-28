@@ -1,0 +1,76 @@
+version: "3.8"
+
+services:
+  # Database Service (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: stayzio-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: real_estate_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d real_estate_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Cache Service (Redis)
+  redis:
+    image: redis:7-alpine
+    container_name: stayzio-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend API Service (Express + TypeScript + Prisma)
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: stayzio-server
+    restart: always
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://postgres:password@db:5432/real_estate_db?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: stayzio-jwt-token-secret-production-key-120
+      CORS_ORIGIN: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Frontend Web Service (Next.js 15)
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: stayzio-client
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: http://localhost:3002
+    depends_on:
+      - server
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

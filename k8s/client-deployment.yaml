@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stayzio-client
+  labels:
+    app: stayzio-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stayzio-client
+  template:
+    metadata:
+      labels:
+        app: stayzio-client
+    spec:
+      containers:
+        - name: client
+          image: your-registry/stayzio-client:latest # Replace with your container registry path
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "3000"
+            - name: NEXT_PUBLIC_API_URL
+              value: "http://stayzio-server-service:3002"
+          ports:
+            - containerPort: 3000
+              name: client
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stayzio-client-service
+spec:
+  selector:
+    app: stayzio-client
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
